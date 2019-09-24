@@ -1,7 +1,51 @@
-.hide {
-  display: none;
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+.root,
+.gameArea,
+.playground {
+  height: 100%;
+}
+
+.startBtn {
+  padding: 10px 25px;
+  background-color: green;
+  border: none;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+}
+
+.gameArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: lightgreen;
+}
+
+.playground {
+  position: relative;
+  width: 400px;
+  background-color: #222;
 }
 
 .car {
-  display: block;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  z-index: 9;
+}
+
+.line {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  width: 5px;
+  height: 50px;
+  z-index: 1;
+  background-color: #fff;
 }

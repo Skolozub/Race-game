@@ -1,54 +1,90 @@
+import { settings } from "./constants/settings";
+import { gameArea, startBtn, playground, car, line } from "./dom";
+import { functions } from "./global/functions";
 import "./styles.css";
 
-/* DOM */
-// const score = document.querySelector(".score");
-const start = document.querySelector(".start");
-const gameArea = document.querySelector(".gameArea");
-
-const car = document.createElement("img");
-car.classList.add("car");
-car.src = "./img/car.png";
-
-/* constants */
-const keys = {
-  ArrowUp: false,
-  ArrowDown: false,
-  ArrowRight: false,
-  ArrowLeft: false
+const state = {
+  keyCode: undefined,
+  settings
 };
 
-const settings = {
-  isStart: false,
-  score: 0,
-  speed: 3
+const changePlayerPosition = (playgroundCoords, carCoords) => {
+  const deltaTop = carCoords.top - playgroundCoords.top;
+  const deltaBottom = playgroundCoords.bottom - carCoords.bottom;
+  const deltaRight = playgroundCoords.right - carCoords.right;
+  const deltaLeft = carCoords.left - playgroundCoords.left;
+
+  switch (state.keyCode) {
+    case 38:
+    case 87: {
+      if (deltaTop > 0) car.style.top = `${deltaTop - settings.speed}px`;
+      break;
+    }
+    case 40:
+    case 83: {
+      if (deltaBottom > 0) car.style.top = `${deltaTop + settings.speed}px`;
+      break;
+    }
+    case 39:
+    case 68: {
+      if (deltaRight > 0) car.style.left = `${deltaLeft + settings.speed}px`;
+      break;
+    }
+    case 37:
+    case 65: {
+      if (deltaLeft > 0) car.style.left = `${deltaLeft - settings.speed}px`;
+      break;
+    }
+    default:
+      break;
+  }
 };
 
-/* functions */
-const startGame = () => {
-  start.classList.add("hide");
-  settings.isStart = true;
-  gameArea.appendChild(car);
+const createLines = playgroungCoords => {
+  const { pipe, createElement, addClass, mountElement } = functions;
+  const line = pipe(createElement("div")).dom(
+    addClass("line"),
+    mountElement(playground)
+  );
+  const lineCoords = line.getBoundingClientRect();
+  console.log(line, playgroungCoords.height, lineCoords.height);
+};
+
+const playGame = () => {
+  if (!state.settings.isStart) return null;
+
+  const playgroundCoords = playground.getBoundingClientRect();
+  const carCoords = car.getBoundingClientRect();
+
+  state.keyCode && changePlayerPosition(playgroundCoords, carCoords);
+
+  createLines(playgroundCoords);
 
   requestAnimationFrame(playGame);
 };
 
+const startGame = () => {
+  functions.unmountElement(gameArea)(startBtn);
+
+  state.settings.isStart = true;
+
+  functions.mountElement(gameArea)(playground);
+  functions.mountElement(playground)(car);
+
+  document.addEventListener("keydown", carRun);
+  document.addEventListener("keyup", carStop);
+
+  requestAnimationFrame(playGame);
+};
+
+startBtn.addEventListener("click", startGame);
+
 const carRun = event => {
   event.preventDefault();
-  keys[event.key] = true;
+  state.keyCode = event.keyCode;
 };
 
 const carStop = event => {
   event.preventDefault();
-  keys[event.key] = false;
+  state.keyCode = undefined;
 };
-
-const playGame = () => {
-  if (!settings.isStart) return null;
-
-  requestAnimationFrame(playGame);
-};
-
-/* listeners */
-start.addEventListener("click", startGame);
-document.addEventListener("keydown", carRun);
-document.addEventListener("keyup", carStop);
