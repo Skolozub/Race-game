@@ -36,8 +36,8 @@ body,
 
 .car {
   position: absolute;
-  bottom: 0px;
-  left: 0px;
+  bottom: 10%;
+  left: 50%;
   z-index: 9;
 }
 

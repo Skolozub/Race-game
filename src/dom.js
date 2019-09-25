@@ -30,6 +30,4 @@ const car = pipe(createElement("img")).dom(
   addParam("src")("./img/player.png")
 );
 
-const line = pipe(createElement("div")).dom(addClass("line"));
-
-export { root, score, gameArea, startBtn, playground, car, line };
+export { root, score, gameArea, startBtn, playground, car };

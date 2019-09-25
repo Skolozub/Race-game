@@ -8,7 +8,7 @@ const state = {
   settings,
   lines: [],
   lineHeight: 50,
-  linesIndent: 20
+  linesIndent: 30
 };
 
 const changePlayerPosition = (playgroundCoords, carCoords) => {
@@ -44,32 +44,30 @@ const changePlayerPosition = (playgroundCoords, carCoords) => {
 };
 
 const createLines = playgroundCoords => {
-  const { pipe, createElement, addClass, addParam, mountElement } = functions;
+  const { pipe, createElement, addClass, mountElement } = functions;
   const { height: playgroundHeight } = playgroundCoords;
   const { lineHeight, linesIndent } = state;
 
-  const numberOfLines = Math.ceil(
-    (playgroundHeight / (lineHeight + linesIndent)) * 1.2
-  );
+  const numberOfLines =
+    Math.ceil(playgroundHeight / (lineHeight + linesIndent)) + 2;
 
-  const newLines = [...Array(numberOfLines - state.lines.length)].map(() =>
-    pipe(createElement("div")).dom(
-      addClass("line"),
-      addParam("height")(lineHeight),
-      mountElement(playground)
-    )
+  const numberOfNewLines = numberOfLines - state.lines.length;
+  if (numberOfNewLines <= 0) return null;
+
+  const newLines = [...Array(numberOfNewLines)].map(() =>
+    pipe(createElement("div")).dom(addClass("line"), mountElement(playground))
   );
 
   state.lines = [...state.lines, ...newLines];
 };
 
 const animateLines = () => {
-  state.lines.map((line, i) => {
+  state.lines.forEach((line, i) => {
     const start = i
-      ? state.lines[i - 1].getBoundingClientRect().top + state.lineHeight
-      : 500;
+      ? state.lines[i - 1].getBoundingClientRect().top
+      : state.linesIndent;
 
-    if (start > state.lineHeight + state.linesIndent)
+    if (start >= state.linesIndent)
       line.style.top = `${line.getBoundingClientRect().top + settings.speed}px`;
   });
 };
@@ -77,9 +75,9 @@ const animateLines = () => {
 const clearLines = playgroundCoords => {
   state.lines.forEach(line => {
     const lineCoords = line.getBoundingClientRect();
-    if (lineCoords.top - state.lineHeight > playgroundCoords.height) {
-      const del = state.lines.shift();
-      functions.unmountElement(playground)(del);
+    if (lineCoords.top - state.lineHeight >= playgroundCoords.height) {
+      const deletingElement = state.lines.shift();
+      functions.unmountElement(playground)(deletingElement);
     }
   });
 };
