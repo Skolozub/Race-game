@@ -5,7 +5,10 @@ import "./styles.css";
 
 const state = {
   keyCode: undefined,
-  settings
+  settings,
+  lines: [],
+  lineHeight: 50,
+  linesIndent: 20
 };
 
 const changePlayerPosition = (playgroundCoords, carCoords) => {
@@ -40,14 +43,45 @@ const changePlayerPosition = (playgroundCoords, carCoords) => {
   }
 };
 
-const createLines = playgroungCoords => {
-  const { pipe, createElement, addClass, mountElement } = functions;
-  const line = pipe(createElement("div")).dom(
-    addClass("line"),
-    mountElement(playground)
+const createLines = playgroundCoords => {
+  const { pipe, createElement, addClass, addParam, mountElement } = functions;
+  const { height: playgroundHeight } = playgroundCoords;
+  const { lineHeight, linesIndent } = state;
+
+  const numberOfLines = Math.ceil(
+    (playgroundHeight / (lineHeight + linesIndent)) * 1.2
   );
-  const lineCoords = line.getBoundingClientRect();
-  console.log(line, playgroungCoords.height, lineCoords.height);
+
+  const newLines = [...Array(numberOfLines - state.lines.length)].map(() =>
+    pipe(createElement("div")).dom(
+      addClass("line"),
+      addParam("height")(lineHeight),
+      mountElement(playground)
+    )
+  );
+
+  state.lines = [...state.lines, ...newLines];
+};
+
+const animateLines = () => {
+  state.lines.map((line, i) => {
+    const start = i
+      ? state.lines[i - 1].getBoundingClientRect().top + state.lineHeight
+      : 500;
+
+    if (start > state.lineHeight + state.linesIndent)
+      line.style.top = `${line.getBoundingClientRect().top + settings.speed}px`;
+  });
+};
+
+const clearLines = playgroundCoords => {
+  state.lines.forEach(line => {
+    const lineCoords = line.getBoundingClientRect();
+    if (lineCoords.top - state.lineHeight > playgroundCoords.height) {
+      const del = state.lines.shift();
+      functions.unmountElement(playground)(del);
+    }
+  });
 };
 
 const playGame = () => {
@@ -59,6 +93,8 @@ const playGame = () => {
   state.keyCode && changePlayerPosition(playgroundCoords, carCoords);
 
   createLines(playgroundCoords);
+  animateLines();
+  clearLines(playgroundCoords);
 
   requestAnimationFrame(playGame);
 };
