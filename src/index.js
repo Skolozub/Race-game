@@ -4,20 +4,20 @@ import { functions } from "./global/functions";
 import "./styles.css";
 
 const state = {
-  keyCode: undefined,
+  keyCodes: [],
   settings,
   lines: [],
   lineHeight: 50,
   linesIndent: 30
 };
 
-const changePlayerPosition = (playgroundCoords, carCoords) => {
+const changePlayerPosition = (playgroundCoords, carCoords, key) => {
   const deltaTop = carCoords.top - playgroundCoords.top;
   const deltaBottom = playgroundCoords.bottom - carCoords.bottom;
   const deltaRight = playgroundCoords.right - carCoords.right;
   const deltaLeft = carCoords.left - playgroundCoords.left;
 
-  switch (state.keyCode) {
+  switch (key) {
     case 38:
     case 87: {
       if (deltaTop > 0) car.style.top = `${deltaTop - settings.speed}px`;
@@ -63,11 +63,11 @@ const createLines = playgroundCoords => {
 
 const animateLines = () => {
   state.lines.forEach((line, i) => {
-    const start = i
-      ? state.lines[i - 1].getBoundingClientRect().top
-      : state.linesIndent;
+    const isNextLineStart = i
+      ? state.lines[i - 1].getBoundingClientRect().top >= state.linesIndent
+      : true;
 
-    if (start >= state.linesIndent)
+    if (isNextLineStart)
       line.style.top = `${line.getBoundingClientRect().top + settings.speed}px`;
   });
 };
@@ -88,7 +88,9 @@ const playGame = () => {
   const playgroundCoords = playground.getBoundingClientRect();
   const carCoords = car.getBoundingClientRect();
 
-  state.keyCode && changePlayerPosition(playgroundCoords, carCoords);
+  state.keyCodes.forEach(key =>
+    changePlayerPosition(playgroundCoords, carCoords, key)
+  );
 
   createLines(playgroundCoords);
   animateLines();
@@ -115,10 +117,10 @@ startBtn.addEventListener("click", startGame);
 
 const carRun = event => {
   event.preventDefault();
-  state.keyCode = event.keyCode;
+  state.keyCodes = [...state.keyCodes, event.keyCode];
 };
 
 const carStop = event => {
   event.preventDefault();
-  state.keyCode = undefined;
+  state.keyCodes = state.keyCodes.filter(key => key !== event.keyCode);
 };
